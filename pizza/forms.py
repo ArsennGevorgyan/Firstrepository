@@ -1,6 +1,7 @@
 from django import forms
 
 from helpers.choices import RATE_CHOICES, PRODUCT_TYPE_CHOICES
+from pizza.models import Restaurant, Pizza, Burger
 
 
 class SearchForm(forms.Form):
@@ -25,9 +26,25 @@ class SearchForm(forms.Form):
         widget=forms.Select(attrs={"class": "form-control search-slt"},
                             ), label="Rate Until", required=False
     )
-    calories_until = forms.FloatField(max_value=1000, min_value=1,
+    # rate = forms.ChoiceField(choices=RATE_CHOICES, widget=forms.Select(attrs={"class": "form-control search-slt"}), label="Rate")
+    calories_until = forms.FloatField(max_value=4000, min_value=1,
                                       label="Calories Until",
                                       required=False)
     product_type = forms.ChoiceField(choices=PRODUCT_TYPE_CHOICES,
                                      widget=forms.Select(attrs={"class": "form-control search-slt"}
                                                          ), required=False)
+
+
+class PizzaForm(forms.ModelForm):
+    class Meta:
+        model = Pizza
+        fields = ("pizza_name", "description", "rate",
+                  "prepare_time", "calories", "image", "price", "restaurant")
+
+
+class BurgerForm(forms.ModelForm):
+    class Meta:
+        model = Burger
+        fields = ("burger_name", "description", "rate",
+                  "prepare_time", "calories", "image", "price", "restaurant")
+
