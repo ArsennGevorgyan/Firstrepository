@@ -1,0 +1,47 @@
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if title %}{{ title }}{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+
+<h1>Pizza Python Website</h1>
+<ul class="navbar-container">
+
+    <li class="navbar-item">Home<span class="navbar-item_label"><a href="{% url 'pizzas' %}">Home</a></span></li>
+    <li class="navbar-item">Restaurants<span class="navbar-item_label">
+        <a href="{% url 'restaurants' %}">Restaurants</a></span>
+    </li>
+    <li class="navbar-item">Category<span class="navbar-item_label">Category</span>
+        <ul class="navbar-container_sub">
+            <li class="navbar-item_sub">Service 1</li>
+            <li class="navbar-item_sub">Service 2</li>
+            <li class="navbar-item_sub">Service 3</li>
+        </ul>
+    </li>
+    <li class="navbar-item">Products<span class="navbar-item_label">Products</span>
+        <ul class="navbar-container_sub">
+            <a href="{% url 'burgers' %}"><li class="navbar-item_sub">Burger</li></a>
+            <a href="{% url 'search' %}"><li class="navbar-item_sub">Search</li></a>
+            <a href="{% url 'add_burger' %}"><li class="navbar-item_sub">Add Burger</li></a>
+            <a href="{% url 'add_pizza' %}"><li class="navbar-item_sub">Add Pizza</li></a>
+        </ul>
+    </li>
+    <li class="navbar-item">About<span class="navbar-item_label"><a href="{% url 'about_us' %}">About</a></span></li>
+</ul>
+{% include "layouts/alert.html" %}
+{% block content %}
+
+{% endblock %}
+
+
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</html>

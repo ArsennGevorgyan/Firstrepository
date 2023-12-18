@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<li></li>
+<link rel="stylesheet" href="{% static 'css/restaurant.css' %}">
+<link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+{%for restaurant in restaurants%}
+<section class="{% if forloop.counter <= forloop.revcounter %}
+dark{% else %} light{% endif %}">
+    <div class="container py-4">
+        <h1 class="h1 text-center" id="pageHeaderTitle">{{ restaurant.restaurant_name}}</h1>
+
+        <article class="postcard {% if forloop.counter <= forloop.revcounter %} dark {% else %} light {% endif %} {% cycle 'blue' 'red' 'yellow' 'green' %}">
+            <a class="postcard__img_link" href="{%url 'restaurant_detail' restaurant.pk %}">
+                <img class="postcard__img" src="{{ restaurant.image.url }}" alt="Image Title"/>
+            </a>
+            <div class="postcard__text">
+                <h1 class="postcard__title blue"><a href="#">{{ restaurant.restaurant_name}}</a></h1>
+                <div class="postcard__subtitle small">
+                    <time datetime="2020-05-25 12:00:00">
+                        <i class="fas fa-calendar-alt mr-2"></i>{{restaurant.creation_date|date:"D d M Y"}}
+                    </time>
+                </div>
+                <div class="postcard__bar"></div>
+                <div class="postcard__preview-txt">{{ restaurant.description }}
+                </div>
+                <ul class="postcard__tagbox">
+                    <li class="tag__item"><i class="fas fa-tag mr-2"></i>Pizza count {{restaurant.pizza.all|length}}</li>
+                    <li class="tag__item"><i class="fas fa-tag mr-2"></i>Burger count {{restaurant.burger.all|length}}</li>
+
+                </ul>
+            </div>
+        </article>
+    </div>
+</section>
+{% endfor %}
+{% include "layouts/pagination.html" with page_obj=restaurants %}
+{% endblock %}

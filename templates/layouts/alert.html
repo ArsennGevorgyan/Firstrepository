@@ -1,0 +1,11 @@
+{% if messages %}
+    <div class="container">
+
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible">
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <strong>{{ message.tag_label }}!</strong> {{ message }}
+        </div>
+    {% endfor %}
+    </div>
+{% endif %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <link rel="stylesheet" href="{% static 'css/pizza.css' %}">
+    <link rel="stylesheet" href="{% static 'css/pagination.css' %}">
+
+    <div class="container">
+
+        {% for burger in burgers %}
+            <figure class="pizza">
+                <div class="pizza__hero">
+                    <a href="{{ burger.get_absolute_url }}"><img src="{% if burger.image %}{{ burger.image.url }}{% else %}
+                {% static 'img/no_image.jpeg' %}
+                {% endif %}"
+                         alt="pizza" class="pizza__img"></a>
+                </div>
+                <div class="pizza__content">
+                    <div class="pizza__title">
+                        <h1 class="pizza__heading"><a href="{{ burger.get_absolute_url }}">Burger {{ burger.name }}</a>🥩</h1>
+                        <div class="pizza__tag pizza__tag--1">#meat</div>
+                        <div class="pizza__tag pizza__tag--2">#italian</div>
+                    </div>
+                    <p class="pizza__description">{{ burger.description }}</p>
+                    <div class="pizza__details">
+                        <p class="pizza__detail"><span class="emoji">🍕 </span>{{ burger.calories }} kcal</p>
+                        <p class="pizza__detail"><span class="emoji">⏱ </span>{{ burger.prepare_time }} mins</p>
+                        <p class="pizza__detail"><span class="emoji">⭐️ </span>{{ burger.rate }}/ 5</p>
+
+                    </div>
+                </div>
+                <div class="pizza__price">{{ burger.price }}֏</div>
+
+            </figure>
+
+        {% endfor %}
+    {% include "layouts/pagination.html" with page_obj=burgers %}
+        <br>
+
+    </div>
+
+
+{% endblock %}

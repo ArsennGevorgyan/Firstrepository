@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="search-sec">
+    <div class="container">
+        <form action="#" novalidate="novalidate">
+            {{ form }}
+            <br>
+             <button type="submit" class="btn btn-danger wrn-btn">Search</button>
+        </form>
+    </div>
+</section>
+            <div class="row">
+            <div class="col-12">
+                <table class="table table-image">
+                    <thead>
+                    <tr>
+                         <th scope="col">Row</th>
+                        <th scope="col">Image</th>
+                        <th scope="col">Calories</th>
+                        <th scope="col">price</th>
+                        <th scope="col">prepare time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for product in result_product %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td class="w-25">
+                                <a href="{{ product.get_absolute_url }}"><img src="{% if product.image %}{{ product.image.url }}
+                                          {% else %}{% static 'img/no_image.jpeg' %}{% endif %}"
+                                                class="img-fluid img-thumbnail" alt="Sheep"></a>
+                            </td>
+                            <td>{{ product.calories }}</td>
+                            <td>{{ product.price }}</td>
+                            <td>{{ product.prepare_time }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+{% endblock %}
