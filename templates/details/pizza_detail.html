@@ -1,10 +1,9 @@
 {% extends "base.html" %}
-
 {% block content %}
     <div class="container bootdey">
         <h1>{{ pizza.pizza_name }}</h1>
+       <span class="tag btn btn-primary"><a href="{% url "update_pizza"  pizza.pk %}">Update</a></span>
+                    <span class="tag btn btn-danger"><a href="{% url "delete_pizza" pizza.pk %}">Delete</a></span>
     </div>
     {% include "layouts/detal.html" with item=pizza %}
-
-
 {% endblock %}
