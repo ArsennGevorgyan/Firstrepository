@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <h2>Add a Restaurant</h2>
+    <form method="post" enctype="multipart/form-data" id="restaurantForm">
+
+        {% csrf_token %}
+        {{ restaurant_form|crispy }}
+
+        <h2>Optional Pizza</h2>
+        <input type="checkbox" id="add_pizza" name="add_pizza"> Add Pizza<br>
+        <div id="pizza_form" style="display: none;">
+            {{ pizza_formset.management_form }}
+            {% for pizza_form in pizza_formset %}
+                {{ pizza_form.id }}
+                {{ pizza_form|crispy }}
+            {% endfor %}
+        </div>
+
+        <h2>Optional Burger</h2>
+        <input type="checkbox" id="add_burger" name="add_burger"> Add Burger<br>
+        <div id="burger_form" style="display: none;">
+            {{ burger_formset.management_form }}
+            {% for burger_form in burger_formset %}
+                {{ burger_form.id }}
+                {{ burger_form|crispy }}
+            {% endfor %}
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+</div>
+<script>
+    // Show/hide pizza form based on checkbox
+    document.getElementById('add_pizza').addEventListener('change', function() {
+      document.getElementById('pizza_form').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Show/hide burger form based on checkbox
+    document.getElementById('add_burger').addEventListener('change', function() {
+      document.getElementById('burger_form').style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Are You Sure You Want To Delete This Restaurant?</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{{ restaurant.get_absolute_url }}"><button  type="button" class="btn btn-primary">Cancel</button></a>
+    </form>
+
+    </div>
+
+{% endblock %}

@@ -10,3 +10,5 @@ def upload_restaurant(instance, filename):
     return f"restaurant/{instance.name}/{filename}"
 
 
+def upload_user_images(instance, filename):
+    return f"users/{instance.user.username}/{filename}"

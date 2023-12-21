@@ -15,7 +15,7 @@ dark{% else %} light{% endif %}">
                 <img class="postcard__img" src="{{ restaurant.image.url }}" alt="Image Title"/>
             </a>
             <div class="postcard__text">
-                <h1 class="postcard__title blue"><a href="#">{{ restaurant.restaurant_name}}</a></h1>
+                <h1 class="postcard__title blue"><a href="#">{{ restaurant.name}}</a></h1>
                 <div class="postcard__subtitle small">
                     <time datetime="2020-05-25 12:00:00">
                         <i class="fas fa-calendar-alt mr-2"></i>{{restaurant.creation_date|date:"D d M Y"}}

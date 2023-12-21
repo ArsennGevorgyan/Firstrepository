@@ -12,13 +12,13 @@
             <div class="panel-body">
                 <div class="col-md-6">
                     <div class="pro-img-details">
-                        <img src="{% if burger.image %}{{ burger.image.url }}{% endif %}" alt="Nope" style="width:50%">
+                        <img src="{% if item.image %}{{ item.image.url }}{% endif %}" alt="Nope" style="width:50%">
                     </div>
                 </div>
-                <div class="burger__details">
-                    <p class="burger__detail"><span class="emoji">🍕 </span>{{ item.calories }} kcal</p>
-                    <p class="burger__detail"><span class="emoji">⏱ </span>{{ item.prepare_time }} mins</p>
-                    <p class="burger__detail"><span class="emoji">⭐️ </span>{{ item.rate }}/ 10</p>
+                <div class="item__details">
+                    <p class="item__detail"><span class="emoji">🍕 </span>{{ item.calories }} kcal</p>
+                    <p class="item__detail"><span class="emoji">⏱ </span>{{ item.prepare_time }} mins</p>
+                    <p class="item__detail"><span class="emoji">⭐️ </span>{{ item.rate }}/ 10</p>
 
                 </div>
                 <div class="col-md-12">

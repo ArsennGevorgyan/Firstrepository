@@ -1,7 +1,12 @@
 from django import forms
 
 from helpers.choices import RATE_CHOICES, PRODUCT_TYPE_CHOICES
-from pizza.models import Pizza, Burger
+from pizza.models import Pizza, Burger, Restaurant
+
+from django.contrib.auth.forms import UserCreationForm
+from django_countries.fields import CountryField
+from phonenumber_field.formfields import PhoneNumberField
+from django.contrib.auth.models import User
 
 
 class SearchForm(forms.Form):
@@ -18,8 +23,8 @@ class SearchForm(forms.Form):
     rate_from = forms.ChoiceField(
         choices=RATE_CHOICES,
         widget=forms.Select(
-                            attrs={"class": "form-control search-slt"}
-                            ), label="Rate From", required=False, initial=None
+            attrs={"class": "form-control search-slt"}
+        ), label="Rate From", required=False, initial=None
     )
     rate_until = forms.ChoiceField(
         choices=RATE_CHOICES,
@@ -35,7 +40,6 @@ class SearchForm(forms.Form):
 
 
 class PizzaForm(forms.ModelForm):
-
     class Meta:
         model = Pizza
         fields = ("name", "description",
@@ -44,9 +48,29 @@ class PizzaForm(forms.ModelForm):
 
 
 class BurgerForm(forms.ModelForm):
-
     class Meta:
         model = Burger
         fields = ("name", "description",
                   "rate", "prepare_time", "calories",
                   "price", "image", "restaurant")
+
+
+class RestaurantForm(forms.ModelForm):
+    class Meta:
+        model = Restaurant
+        fields = ("name", "description",
+                  "image", "creation_date")
+
+
+class RegistrationForm(UserCreationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = True
+
+    country = CountryField().formfield()
+    phone_number = PhoneNumberField(required=False)
+
+    class Meta:
+        model = User
+        fields = ("username", "country", "email",
+                  "phone_number", "password1", "password2")
