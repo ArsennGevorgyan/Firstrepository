@@ -35,7 +35,7 @@
             </figure>
 
         {% endfor %}
-        {% include "layouts/pagination.html" with page_obj=pizzas %}
+        {% include "layouts/pagination.html" with context_object_name=pizzas %}
         <br>
 
     </div>

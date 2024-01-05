@@ -1,6 +1,6 @@
 from django import forms
 
-from helpers.choices import RATE_CHOICES, PRODUCT_TYPE_CHOICES
+from helpers.choices import RATE_CHOICES, PRODUCT_TYPE_CHOICES, UserTypeChoice
 from pizza.models import Pizza, Burger, Restaurant
 
 from django.contrib.auth.forms import UserCreationForm
@@ -62,15 +62,36 @@ class RestaurantForm(forms.ModelForm):
                   "image", "creation_date")
 
 
-class RegistrationForm(UserCreationForm):
+class UserRegistrationForm(UserCreationForm):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["email"].required = True
 
     country = CountryField().formfield()
     phone_number = PhoneNumberField(required=False)
+    image = forms.ImageField(required=False)
+    user_type = forms.ChoiceField(choices=UserTypeChoice.choices)
 
     class Meta:
         model = User
-        fields = ("username", "country", "email",
-                  "phone_number", "password1", "password2")
+        fields = ("username", "email",
+                  "country", "phone_number",
+                  "password1", "password2")
+
+
+class ProfileForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].required = True
+
+    country = CountryField().formfield()
+    phone_number = PhoneNumberField(required=False)
+    image = forms.ImageField(required=False)
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name",
+                  "email", "username", "country",
+                  "phone_number", "image")

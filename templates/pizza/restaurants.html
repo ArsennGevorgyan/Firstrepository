@@ -34,5 +34,5 @@ dark{% else %} light{% endif %}">
     </div>
 </section>
 {% endfor %}
-{% include "layouts/pagination.html" with page_obj=restaurants %}
+{% include "layouts/pagination.html" with context_object_name=restaurants %}
 {% endblock %}

@@ -1,6 +1,5 @@
-from .views import (pizza, burger, all_restaurant, advanced_search,
-                    about_us)
-from .details import (pizza_detail, burger_detail,
-                      restaurant_detail, restaurant_detail,
-                      add_pizza, add_burger)
-
+from .views import (PizzaListView, BurgerListView, RestaurantListView, UserCreationView, UserLoginView,
+                    UserLogoutView, UserProfileView, UserUpdateView, AdvancedSearchView,
+                    AboutUsView)
+from .details import (PizzaDetailView, BurgerDetailView, RestaurantDetailView, AddRestaurantView, AddPizzaView,
+                      AddBurgerView, EditPizzaView, EditBurgerView, DeletePizzaView, DeleteBurgerView)

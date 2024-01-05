@@ -1,55 +1,61 @@
-from django.forms import inlineformset_factory
 from django.shortcuts import get_object_or_404, render, redirect
-
 from django.contrib import messages
+from django.urls import reverse_lazy
+from django.views import View
+from django.views.generic import DeleteView, UpdateView
 
-from helpers.utils import get_similar_products
+from helpers.detail import DetailView
 from pizza.forms import PizzaForm, BurgerForm, RestaurantForm
-from pizza.models import Pizza, Restaurant, Burger
+from pizza.models import Burger, Restaurant, Pizza
+from django.forms import inlineformset_factory
 
 
-def pizza_detail(request, pk: int):
-    pizza_inst = get_object_or_404(Pizza, pk=pk)
-    similar_products = get_similar_products(Pizza, pizza_inst)
-    return render(
-        request,
-        "details/pizza_detail.html",
-        {"pizza": pizza_inst, "similar_products": similar_products},
-    )
+class PizzaDetailView(DetailView):
+    template_name = "details/pizza_detail.html"
+    model = Pizza
 
 
-def burger_detail(request, pk: int):
-    burger_inst = get_object_or_404(Burger, pk=pk)
-    similar_products = get_similar_products(Burger, burger_inst)
-    return render(
-        request,
-        "details/burger_detail.html",
-        {"burger": burger_inst, "similar_products": similar_products},
-    )
+class BurgerDetailView(DetailView):
+    template_name = "details/burger_detail.html"
+    model = Burger
 
 
-def restaurant_detail(request, pk):
-    restaurant = get_object_or_404(Restaurant, pk=pk)
-    items = restaurant.pizza.all()
-    if burgers := request.GET.get("burgers"):
+class RestaurantDetailView(View):
+    template_name = "pizza/restaurant_detail.html"
+
+    def get(self, request, pk, *args, **kwargs):
+        restaurant = get_object_or_404(Restaurant, pk=pk)
+        items = restaurant.pizza.all()
+        burgers = request.GET.get("burgers")
         if burgers == "True":
             items = restaurant.burger.all()
 
-    return render(
-        request,
-        "pizza/restaurant_detail.html",
-        {"restaurant": restaurant, "items": items},
-    )
+        return render(
+            request,
+            self.template_name,
+            {"restaurant": restaurant, "items": items},
+        )
 
 
-def add_restaurant(request):
+class AddRestaurantView(View):
+    template_name = "details/add_restaurant.html"
     PizzaFormSet = inlineformset_factory(Restaurant, Pizza, form=PizzaForm, extra=2, can_delete=False)
     BurgerFormSet = inlineformset_factory(Restaurant, Burger, form=BurgerForm, extra=2, can_delete=False)
 
-    if request.method == "POST":
+    def get(self, request, *args, **kwargs):
+        restaurant_form = RestaurantForm()
+        pizza_formset = self.PizzaFormSet(instance=Restaurant(), prefix='pizzas')
+        burger_formset = self.BurgerFormSet(instance=Restaurant(), prefix='burgers')
+        return render(
+            request,
+            self.template_name,
+            {"restaurant_form": restaurant_form, "pizza_formset": pizza_formset, "burger_formset": burger_formset},
+        )
+
+    def post(self, request, *args, **kwargs):
         restaurant_form = RestaurantForm(request.POST, request.FILES)
-        pizza_formset = PizzaFormSet(request.POST, request.FILES, instance=Restaurant(), prefix='pizzas')
-        burger_formset = BurgerFormSet(request.POST, request.FILES, instance=Restaurant(), prefix='burgers')
+        pizza_formset = self.PizzaFormSet(request.POST, request.FILES, instance=Restaurant(), prefix='pizzas')
+        burger_formset = self.BurgerFormSet(request.POST, request.FILES, instance=Restaurant(), prefix='burgers')
 
         if all([restaurant_form.is_valid(), pizza_formset.is_valid(), burger_formset.is_valid()]):
             restaurant_instance = restaurant_form.save()
@@ -60,98 +66,88 @@ def add_restaurant(request):
             messages.success(request, "Restaurant added successfully!")
             return redirect("restaurants")
 
-    else:
-        restaurant_form = RestaurantForm()
-        pizza_formset = PizzaFormSet(instance=Restaurant(), prefix='pizzas')
-        burger_formset = BurgerFormSet(instance=Restaurant(), prefix='burgers')
-
-    return render(
-        request,
-        "details/add_restaurant.html",
-        {"restaurant_form": restaurant_form, "pizza_formset": pizza_formset, "burger_formset": burger_formset},
-    )
+        return render(
+            request,
+            self.template_name,
+            {"restaurant_form": restaurant_form, "pizza_formset": pizza_formset, "burger_formset": burger_formset},
+        )
 
 
-def add_pizza(request):
-    form = PizzaForm()
-    if request.method == "POST":
+class AddPizzaView(View):
+    template_name = "details/add_pizza.html"
+
+    def get(self, request, *args, **kwargs):
+        form = PizzaForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
         form = PizzaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Pizza added successfully!")
             return redirect("pizzas")
-    return render(request, "details/add_pizza.html", {"form": form})
+
+        return render(request, self.template_name, {"form": form})
 
 
-def add_burger(request):
-    form = BurgerForm()
-    if request.method == "POST":
+class AddBurgerView(View):
+    template_name = "details/add_burger.html"
+
+    def get(self, request, *args, **kwargs):
+        form = BurgerForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request, *args, **kwargs):
         form = BurgerForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, "Burger added successfully!")
             return redirect("burgers")
-    return render(request, "details/add_burger.html", {"form": form})
+
+        return render(request, self.template_name, {"form": form})
 
 
-def edit_restaurant(request, pk: int):
-    restaurant = get_object_or_404(Restaurant, pk=pk)
-    form = RestaurantForm(instance=restaurant)
-    if request.method == "POST":
-        form = PizzaForm(request.POST, request.FILES, instance=restaurant)
-        if form.is_valid():
-            restaurant_instance = form.save()
-            messages.success(request, f"{restaurant_instance.name} Updated successfully!")
-            return redirect(restaurant_instance)
-    return render(request, "details/edit_restaurant.html", {"form": form})
+class EditPizzaView(UpdateView):
+    model = Pizza
+    form_class = PizzaForm
+    template_name = 'details/edit_pizza.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, f"{form.instance.pizza_name} Updated successfully!")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('pizzas')
 
 
-def edit_pizza(request, pk: int):
-    pizza = get_object_or_404(Pizza, pk=pk)
-    form = PizzaForm(instance=pizza)
-    if request.method == "POST":
-        form = PizzaForm(request.POST, request.FILES, instance=pizza)
-        if form.is_valid():
-            pizza_instance = form.save()
-            messages.success(request, f"{pizza_instance.name} Updated successfully!")
-            return redirect(pizza_instance)
-    return render(request, "details/edit_pizza.html", {"form": form})
+class EditBurgerView(UpdateView):
+    model = Burger
+    form_class = BurgerForm
+    template_name = 'details/edit_burger.html'
+
+    def form_valid(self, form):
+        messages.success(self.request, f"{form.instance.burger_name} Updated successfully!")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('burgers')
 
 
-def edit_burger(request, pk: int):
-    burger = get_object_or_404(Burger, pk=pk)
-    form = BurgerForm(instance=burger)
-    if request.method == "POST":
-        form = BurgerForm(request.POST, request.FILES, instance=burger)
-        if form.is_valid():
-            burger_instance = form.save()
-            messages.success(request, f"{burger_instance.name} Updated successfully!")
-            return redirect(burger_instance)
-    return render(request, "details/edit_burger.html", {"form": form})
+class DeletePizzaView(DeleteView):
+    model = Pizza
+    template_name = 'details/delete_pizza.html'
+    success_url = reverse_lazy('pizzas')
+
+    def delete(self, request, *args, **kwargs):
+        messages.info(self.request, "Pizza deleted Successfully")
+        return super().delete(request, *args, **kwargs)
 
 
-def delete_restaurant(request, pk: int):
-    restaurant = get_object_or_404(Pizza, pk=pk)
-    if request.method == "POST":
-        restaurant.delete()
-        messages.info(request, "Restaurant deleted Successfully")
-        return redirect("restaurant")
-    return render(request, "details/delete_restaurant.html", {"restaurant": restaurant})
+class DeleteBurgerView(DeleteView):
+    model = Burger
+    template_name = 'details/delete_burger.html'
+    success_url = reverse_lazy('burgers')
 
-
-def delete_pizza(request, pk: int):
-    pizza = get_object_or_404(Pizza, pk=pk)
-    if request.method == "POST":
-        pizza.delete()
-        messages.info(request, "pizza deleted Successfully")
-        return redirect("pizzas")
-    return render(request, "details/delete_pizza.html", {"pizza": pizza})
-
-
-def delete_burger(request, pk: int):
-    burger = get_object_or_404(Burger, pk=pk)
-    if request.method == "POST":
-        burger.delete()
-        messages.info(request, "Burger deleted successfully!")
-        return redirect("burgers")
-    return render(request, "details/delete_burger.html", {"burger": burger})
+    def delete(self, request, *args, **kwargs):
+        messages.info(self.request, "Burger deleted successfully!")
+        return super().delete(request, *args, **kwargs)

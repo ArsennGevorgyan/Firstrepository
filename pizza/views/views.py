@@ -1,96 +1,132 @@
-from django.core.paginator import Paginator
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import User
+from django.contrib.auth.views import LoginView, LogoutView
 from django.db.models import Q
-
-from pizza.forms import SearchForm
+from django.urls import reverse_lazy, reverse
+from django.views import View
+from django.views.generic import UpdateView, DetailView, CreateView, ListView
+from helpers.mixins import OwnProFileMixin
+from pizza.forms import SearchForm, ProfileForm, UserRegistrationForm
 from pizza.models import Pizza, Burger, Restaurant
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-
-from pizza.forms import RegistrationForm
 
 
-def pizza(request):
-    pizzas = Pizza.objects.all().order_by("-pk")
-    paginator = Paginator(pizzas, 2)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    return render(request, "pizza/all_pizza.html", {"pizzas": page_obj})
+class PizzaListView(ListView):
+    model = Pizza
+    template_name = "pizza/all_pizza.html"
+    context_object_name = "pizzas"
+    paginate_by = 3
+    ordering = ["-pk"]
 
 
-def burger(request):
-    burgers = Burger.objects.all().order_by("-pk")
-    paginator = Paginator(burgers, 2)
-    page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
-    return render(request, "pizza/burgers.html", {"burgers": page_obj})
+class BurgerListView(ListView):
+    model = Burger
+    template_name = "pizza/burgers.html"
+    context_object_name = "burgers"
+    paginate_by = 3
+    ordering = ["-pk"]
 
 
-def all_restaurant(request):
-    restaurants = Restaurant.objects.all().prefetch_related("pizza", "burger").order_by("pk")
-    paginator = Paginator(restaurants, 6)
-    page_number = request.GET.get("page")
-    restaurants = paginator.get_page(page_number)
-    return render(request, "pizza/restaurants.html", {"restaurants": restaurants})
+class RestaurantListView(ListView):
+    model = Restaurant
+    template_name = "pizza/restaurants.html"
+    context_object_name = "restaurants"
+    paginate_by = 4
+    ordering = ["pk"]
+
+    def get_queryset(self):
+        return Restaurant.objects.all().prefetch_related("pizza", "burger").order_by("pk")
 
 
-def advanced_search(request):
-    form = SearchForm()
-    result_product = []
-    if name := request.GET.get("name"):
-        result_q = Q()
-        form = SearchForm(request.GET)
-        product_table = Pizza
+class AdvancedSearchView(View):
+    template_name = 'pizza/search.html'
+
+    def get(self, request, *args, **kwargs):
+        form = SearchForm()
+        result_product = []
+        return render(request, self.template_name, {"form": form, "result_product": result_product})
+
+    def post(self, request, *args, **kwargs):
+        form = SearchForm(request.POST)
+        result_product = []
         if form.is_valid():
-            if request.GET.get("product_type") == "burger":
-                product_table = Burger
-                result_q &= Q(burger_name__icontains=name)
-            else:
-                result_q &= Q(pizza_name__icontains=name)
-            if rate_until := form.cleaned_data.get("rate_until"):
+            name = form.cleaned_data.get("name")
+            product_type = request.POST.get("product_type")
+            rate_until = form.cleaned_data.get("rate_until")
+            rate_from = form.cleaned_data.get("rate_from") or 0
+            calories_until = request.POST.get("calories_until")
+
+            result_q = Q()
+
+            product_table = Burger if product_type == "burger" else Pizza
+
+            if name:
+                if product_type == "burger":
+                    result_q &= Q(burger_name__icontains=name)
+                else:
+                    result_q &= Q(pizza_name__icontains=name)
+
+            if rate_until:
                 result_q &= Q(rate__lte=rate_until)
-            result_q &= Q(rate__gte=form.cleaned_data["rate_from"] or 0)
-            if calories_until := request.GET.get("calories_until"):
+
+            result_q &= Q(rate__gte=rate_from)
+
+            if calories_until:
                 result_q &= Q(calories__lte=calories_until)
+
             result_product = product_table.objects.filter(result_q)
-    return render(request, "pizza/search.html", {"form": form,
-                                                 "result_product": result_product})
+
+        return render(request, self.template_name, {"form": form, "result_product": result_product})
 
 
-def about_us(request):
-    return render(request, "pizza/about_us.html")
+class AboutUsView(View):
+    template_name = 'pizza/about_us.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
 
 
-def user_registration(request):
-    form = RegistrationForm()
-    if request.method == "POST":
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
-            user_instance = form.save()
-            user_instance.profile.phone_field = form.cleaned_data["phone_number"]
-            user_instance.profile.country = form.cleaned_data["country"]
-            user_instance.profile.save()
-            messages.success(request, "User created successfully")
-            return redirect("pizzas")
-    return render(request, "users/registration.html", {"form": form})
+class UserCreationView(CreateView):
+    model = User
+    form_class = UserRegistrationForm
+    template_name = "user/registration.html"
+    success_url = reverse_lazy("pizzas")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.profile.phone_number = form.cleaned_data["phone_number"]
+        self.object.profile.country = form.cleaned_data["country"]
+        self.object.profile.image = form.cleaned_data["image"]
+        self.object.profile.user_type = form.cleaned_data["user_type"]
+        self.object.profile.save()
+        messages.success(self.request, "User Created Successfully")
+        return response
 
 
-def user_login(request):
-    next_url = request.GET.get("next")
-    if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            if next_url:
-                return redirect(next_url)
-            return redirect("pizzas")
-        messages.error(request, "Username or password are not correct")
-    return render(request, "users/login.html")
+class UserLoginView(LoginView):
+    template_name = "user/login.html"
 
 
-def user_logout(request):
-    if request.user:
-        logout(request)
-    return redirect("pizzas")
+class UserLogoutView(LogoutView):
+    pass
+
+
+class UserProfileView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = "user/profile.html"
+
+
+class UserUpdateView(OwnProFileMixin, UpdateView):
+    model = User
+    form_class = ProfileForm
+    template_name = "user/edit_profile.html"
+
+    def get_initial(self):
+        return {"phone_number": self.object.profile.phone_number,
+                "country": self.object.profile.country,
+                "image": self.object.profile.image}
+
+    def get_success_url(self):
+        messages.success(self.request, "User updated successfully!")
+        return reverse("profile", kwargs={"pk": self.object.pk})

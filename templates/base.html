@@ -43,21 +43,27 @@
     <li class="navbar-item">About<span class="navbar-item_label"><a href="{% url 'about_us' %}">About</a></span></li>
     <li class="navbar-item">Registration<span class="navbar-item_label">Registration</span>
         <ul class="navbar-container_sub">
-            {% if request.user.is_authenticated %}
-                        <li class="nav-item">
-                        <a class="nav-link" href="{% url "user_logout" %}">LOGOUT</a>
-                    </li>
-                        <li class="nav-item">
-                        <a class="nav-link" href="">Profile</a>
-                    </li>
-                    {% else %}
-                     <li class="nav-item">
-                        <a class="nav-link" href="{% url "registration" %}">Registration</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url "user_login" %}">Login</a>
-                    </li>
-                    {% endif %}
+             <li class="navbar-item">Auth User<span class="navbar-item_label">Auth User</span>
+        <ul class="navbar-container_sub">
+            {% if not request.user.is_authenticated %}
+                <a href="{% url "registration" %}">
+                    <li class="navbar-item_sub">Register</li>
+                </a>
+                <a href="{% url "login" %}">
+                    <li class="navbar-item_sub">Login</li>
+                </a>
+            {% else %}
+                <a href="{% url "profile" request.user.id %}">
+                    <li class="navbar-item_sub">Profile</li>
+                </a>
+                <a href="{% url "login" %}">
+                    <li class="navbar-item_sub">Users</li>
+                </a>
+                <a href="{% url "logout" %}">
+                    <li class="navbar-item_sub">LogOut</li>
+                </a>
+            {% endif %}
+        </ul>
 
         </ul>
     </li>
