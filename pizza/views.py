@@ -114,16 +114,6 @@ def add_burger(request):
     return render(request, "pizza/add_product.html", {"form": form})
 
 
-def add_restaurant(request):
-    form = RestaurantForm()
-    if request.method == "POST":
-        form = RestaurantForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect("restaurants")
-    return render(request, "pizza/add_product.html", {"form": form})
-
-
 def update_pizza(request, pk: int):
     pizza = get_object_or_404(Pizza, pk=pk)
     form = PizzaForm(instance=pizza)
@@ -175,14 +165,16 @@ def add_restaurant_with_products(request):
         burger_formset = burger_form_set(request.POST, request.FILES, instance=restaurant_form.instance,
                                         prefix='burgers')
         if all([restaurant_form.is_valid(), pizza_formset.is_valid(), burger_formset.is_valid()]):
-            restaurant_form.save()
+            restaurant = restaurant_form.save()
             pizza_formset.save()
             burger_formset.save()
+            messages.success(request, f"Your {restaurant.name} Created Successfully")
             return redirect("restaurants")
     else:
         restaurant_form = RestaurantForm()
         pizza_formset = pizza_form_set(instance=Restaurant(), prefix='pizzas')
         burger_formset = burger_form_set(instance=Restaurant(), prefix='burgers')
+        messages.error(request, f"Your Restaurant didn't Created Successfully")
     return render(
         request,
         "pizza/add_restaurant_with_products.html",
