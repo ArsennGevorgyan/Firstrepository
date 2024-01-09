@@ -1,6 +1,4 @@
 from django import forms
-from django.forms import inlineformset_factory
-
 from helpers.choices import RATE_CHOICES, PRODUCT_TYPE_CHOICES
 from pizza.models import Restaurant, Pizza, Burger
 
@@ -19,8 +17,8 @@ class SearchForm(forms.Form):
     rate_from = forms.ChoiceField(
         choices=RATE_CHOICES,
         widget=forms.Select(
-                            attrs={"class": "form-control search-slt"}
-                            ), label="Rate From", required=False
+            attrs={"class": "form-control search-slt"}
+        ), label="Rate From", required=False
     )
     rate_until = forms.ChoiceField(
         choices=RATE_CHOICES,
@@ -50,10 +48,6 @@ class BurgerForm(forms.ModelForm):
 
 
 class RestaurantForm(forms.ModelForm):
-
     class Meta:
         model = Restaurant
         fields = ("name", "description", "image", "creation_date")
-
-
-
